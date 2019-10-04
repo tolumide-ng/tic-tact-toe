@@ -71,11 +71,11 @@ function declareWinner(who) {
 }
 
 function emptySquares() {
-  return origBoard.filter(s => typeof s === "number");
+  return origBoard.filter(s => typeof s == "number");
 }
 
 function bestSpot() {
-  return emptySquares()[0];
+  return minimax(origBoard, aiPlayer).index;
 }
 
 function checkTie() {
@@ -90,4 +90,53 @@ function checkTie() {
   return false;
 }
 
-// Lesson credit: Beau Carnes
+function minimax(newBoard, player) {
+  let availSpots = emptySquares();
+
+  if (checkWin(newBoard, huPlayer)) {
+    return { score: -10 };
+  } else if (checkWin(newBoard, aiPlayer)) {
+    return { score: 10 };
+  } else if (availSpots.length === 0) {
+    return { score: 0 };
+  }
+  let moves = [];
+  for (let i = 0; i < availSpots.length; i++) {
+    let move = {};
+    move.index = newBoard[availSpots[i]];
+    newBoard[availSpots[i]] = player;
+
+    if (player == aiPlayer) {
+      let result = minimax(newBoard, huPlayer);
+      move.score = result.score;
+    } else {
+      let result = minimax(newBoard, aiPlayer);
+      move.score = result.score;
+    }
+
+    newBoard[availSpots[i]] = move.index;
+
+    moves.push(move);
+  }
+
+  let bestMove;
+  if (player === aiPlayer) {
+    let bestScore = -10000;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  } else {
+    let bestScore = 10000;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  }
+
+  return moves[bestMove];
+}
